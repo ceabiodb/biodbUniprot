@@ -1,0 +1,4 @@
+cache
+man
+*.log
+tests/testthat/output
