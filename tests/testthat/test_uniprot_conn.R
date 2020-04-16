@@ -34,7 +34,7 @@ test.uniprot.wsQuery.multiple.columns <- function(db) {
 ################################################################
 
 # Instantiate Biodb
-biodb <- biodb::createBiodbTestInstance(log='test_uniprot.log', ack=TRUE)
+biodb <- biodb::createBiodbTestInstance(log='uniprot_test.log', ack=TRUE)
 
 # Load package definitions
 file <- system.file("definitions.yml", package='biodbUniprot')

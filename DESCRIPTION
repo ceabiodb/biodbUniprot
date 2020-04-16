@@ -20,7 +20,8 @@ Suggests:
 Imports:
 	methods,
 	biodb (>= 0.99.0)
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.0
 Collate:
     'UniprotConn.R'
     'UniprotEntry.R'
+    'package.R'

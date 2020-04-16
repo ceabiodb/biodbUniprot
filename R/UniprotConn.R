@@ -1,7 +1,7 @@
 #' The connector class to Uniprot database.
 #'
 #' This is a concrete connector class. It must never be instantiated directly,
-#' but instead be instantiated through the factory \code{\link{BiodbFactory}}.
+#' but instead be instantiated through the factory BiodbFactory.
 #' Only specific methods are described here. See super classes for the
 #' description of inherited methods.
 #'
@@ -20,6 +20,7 @@
 #' # Terminate instance.
 #' mybiodb$terminate()
 #'
+#' @import methods
 #' @export UniprotConn
 #' @exportClass UniprotConn
 UniprotConn <- methods::setRefClass("UniprotConn",
@@ -106,7 +107,6 @@ getEntryPageUrl=function(id) {
     return(vapply(id, f, FUN.VALUE=''))
 },
 
-
 searchCompound=function(name=NULL, mass=NULL, mass.field=NULL, mass.tol=0.01,
                         mass.tol.unit='plain', max.results=NA_integer_) {
     # Overrides super class' method.
@@ -173,7 +173,6 @@ searchCompound=function(name=NULL, mass=NULL, mass.field=NULL, mass.tol=0.01,
 
     return(url)
 },
-
 
 .doGetEntryIds=function(max.results=NA_integer_) {
 

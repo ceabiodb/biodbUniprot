@@ -2,3 +2,5 @@ cache
 man
 *.log
 tests/testthat/output
+biodbUniprot.Rcheck
+biodbUniprot_*.tar.gz
