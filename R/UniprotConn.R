@@ -99,6 +99,88 @@ wsQuery=function(query='', columns=NULL, format=NULL, limit=NULL,
     return(results)
 },
 
+geneSymbolToUniprotIds=function(genes, ignore.case=TRUE,
+                                ignore.nonalphanum=FALSE, partial.match=FALSE,
+                                filtering=TRUE, max.results=NA_integer_) {
+    ":\n\nGets UniProt IDs associated with gene symbols.
+    \ngenes: A vector of gene symbols to convert to UniProt IDs.
+    \nignore.case: If set to TRUE, ignore character case when comparing gene
+    symbols.
+    \nignore.nonalphanum: If set to TRUE, do not take into account
+    non-alphanumeric characters when comparing gene symbols. 
+    \npartial.match: If set to TRUE, a match will be valid even if the provided
+    gene symbol is only a substring of the found gene symbol.
+    \nfiltering: If set to FALSE, do not run any filtering and return all the
+    UniProt IDs given by UniProt Query web service.
+    \nmax.results: Maximum of UniProt IDs returned for each gene symbol.
+    \nReturned value: A named list of vectors of UniProt IDs. The names are gene
+    symbols provided with the genes parameter. For each gene symbol, a vector
+    of found UniProt IDs is set.
+    "
+    
+    ids <- list()
+    
+    if ( ! is.null(genes) && length(genes) > 0) {
+        
+        for (gene in genes)
+            if ( ! is.na(gene)) {
+                
+                # Get UniProt IDs
+                limit <- NULL
+                if ( ! filtering && ! is.na(max.results))
+                    limit <- max.results
+                x <- .self$wsQuery(gene, columns='genes', retfmt='ids',
+                                   limit=limit)
+                
+                # Filters
+                if (filtering) {
+                    
+                    # Prepare gene to find
+                    gene.to.find <- gene
+                    if (ignore.nonalphanum)
+                        gene.to.find <- gsub('[^A-Za-z0-9]', '', gene.to.find)
+                    if (ignore.case)
+                        gene.to.find <- tolower(gene.to.find)
+                    
+                    # Filtering function
+                    gene_matches <- function(id) {
+                        
+                        matches <- FALSE
+                        
+                        # Get gene symbols and prepare them
+                        entry <- .self$getEntry(id)
+                        gene.symbols <- entry$getFieldValue('gene.symbol')
+                        if (ignore.nonalphanum)
+                            gene.symbols <- gsub('[^A-Za-z0-9]', '',
+                                                 gene.symbols)
+                        if (ignore.case)
+                            gene.symbols <- tolower(gene.symbols)
+                        
+                        if (partial.match)
+                            matches <- length(grep(gene.to.find, gene.symbols,
+                                                   fixed=TRUE)) > 0
+                        else
+                            matches <- gene.to.find %in% gene.symbols
+                        
+                        return(matches)
+                    }
+                    
+                    # Run filtering
+                    x <- Filter(gene_matches, x)
+                }
+
+                # Cut
+                if ( ! is.na(max.results) && length(x) > max.results)
+                    x <- x[1:max.results]
+
+                # Set results
+                ids[[gene]] <- x
+            }
+    }
+
+    return(ids)
+},
+
 getEntryPageUrl=function(id) {
     # Overrides super class' method.
 
