@@ -13,8 +13,7 @@ notifications:
 before_install:
     - R -e 'install.packages("BiocManager");BiocManager::install("BiocCheck")'
     - R -e 'install.packages("devtools", dependencies=TRUE)'
-# TODO switch to master branch when ready.
-    - R -e 'devtools::install_github("pkrog/biodb", ref="dev_0.99", dependencies=TRUE, build_vignettes=FALSE)'
+    - R -e 'devtools::install_github("pkrog/biodb", ref="master", dependencies=TRUE, build_vignettes=FALSE)'
 
 script:
     - make test
