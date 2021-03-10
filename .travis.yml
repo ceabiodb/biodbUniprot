@@ -12,7 +12,6 @@ notifications:
 
 before_install:
     - R -e 'install.packages("BiocManager");BiocManager::install("BiocCheck")'
-    - PATH="$PATH:$HOME/R/Library/BiocCheck/script" # Add BiocCheck script dir to PATH because of failure while installing scripts to /opt/R/4.0.2/lib/R/bin (owned by root) as travis user.
     - R -e 'install.packages("devtools", dependencies=TRUE)'
     - R -e 'devtools::install_github("pkrog/biodb", ref="master", dependencies=TRUE, build_vignettes=FALSE)'
 

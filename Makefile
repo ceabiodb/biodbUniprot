@@ -54,7 +54,7 @@ all:
 ################################################################
 
 check: clean.vignettes $(ZIPPED_PKG)
-	time R CMD check --no-build-vignettes "$(ZIPPED_PKG)"
+	R CMD check --no-build-vignettes "$(ZIPPED_PKG)"
 # Use `R CMD check` instead of `devtools::test()` because the later failed once on Travis-CI:
 #   Warning in config_val_to_logical(check_incoming) :
 #     cannot coerce ‘FALSE false’ to logical
@@ -63,11 +63,10 @@ check: clean.vignettes $(ZIPPED_PKG)
 #   Execution halted
 
 full.check: clean.vignettes $(ZIPPED_PKG)
-	time R CMD check "$(ZIPPED_PKG)"
+	R CMD check "$(ZIPPED_PKG)"
 
 bioc.check: clean.vignettes $(ZIPPED_PKG)
-	R $(RFLAGS) -e 'library(BiocCheck)' # Make sure library is loaded once in order to install the scripts.
-	time R CMD BiocCheck --new-package --quit-with-status --no-check-formatting "$(ZIPPED_PKG)"
+	R $(RFLAGS) -e 'BiocCheck::BiocCheck("$(ZIPPED_PKG)", c("--new-package", "--quit-with-status", "--no-check-formatting"))'
 
 test:
 	R $(RFLAGS) -e "devtools::test('$(CURDIR)', filter=$(TEST_FILE), reporter=c('$(TESTTHAT_REPORTER)', 'fail'))"
