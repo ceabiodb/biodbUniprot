@@ -10,6 +10,10 @@ notifications:
         recipients:
             - pierrick.roger@cea.fr
 
+branches:
+  only:
+    - master
+
 before_install:
     - R -e 'install.packages("BiocManager");BiocManager::install("BiocCheck")'
     - R -e 'install.packages("devtools", dependencies=TRUE)'
