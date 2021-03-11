@@ -59,17 +59,6 @@ test.geneSymbolsToUniprotIds <- function(conn) {
         testthat::expect_false(any(not_expected_ids[[gene]] %in% ids[[gene]]))
     }
 
-    # Exact search with lowercase
-    expected_ids <- list('tgf-b1'='Q4LDM3', 'g-csf'='Q9GJU0')
-    not_expected_ids <- list('TGF-b1'=c('W1I9X7', 'Q08FI9'),
-                             'G-CSF'=c('P09919', 'Q8N4W3', 'A0A3G2Y4F6', 'C0STS3'))
-    ids <- conn$geneSymbolToUniprotIds(names(expected_ids))
-    testthat::expect_equal(names(ids), names(expected_ids))
-    for (gene in names(ids)) {
-        testthat::expect_true(all(expected_ids[[gene]] %in% ids[[gene]]))
-        testthat::expect_false(any(not_expected_ids[[gene]] %in% ids[[gene]]))
-    }
-    
     # Ignore non-alphanum chars (e.g.: "G-CSF" == "GCSF")
     expected_ids <- list('TGF-b1'='Q4LDM3', 'G-CSF'=c('Q9GJU0', 'P09919'))
     not_expected_ids <- list('TGF-b1'=c('W1I9X7', 'Q08FI9'),
@@ -95,8 +84,8 @@ test.geneSymbolsToUniprotIds <- function(conn) {
     }
 
     # No filtering
-    expected_ids <- list('TGF-b1'=c('Q4LDM3', 'W1I9X7', 'Q08FI9'),
-                         'G-CSF'=c('Q9GJU0', 'A0A3G2Y4F6', 'P09919' , 'Q8N4W3'))
+    expected_ids <- list('TGF-b1'=c('Q4LDM3', 'W1I9X7'),
+                         'G-CSF'=c('C0STS3', 'A0A679AQ73', 'Q8MKE0'))
     ids <- conn$geneSymbolToUniprotIds(names(expected_ids), filtering=FALSE)
     testthat::expect_equal(names(ids), names(expected_ids))
     for (gene in names(ids))

@@ -54,7 +54,9 @@ wsQuery=function(query='', columns=NULL, format=NULL, limit=NULL,
     }
 
     # Set columns
-    if (is.null(columns) || all(is.na(columns)))
+    if (retfmt == 'ids')
+        columns <- 'id'
+    else if (is.null(columns) || all(is.na(columns)))
         columns <- c("citation", "clusters", "comments", "domains", "domain",
                      "ec", "id", "entry name", "existence", "families",
                      "features", "genes", "go", "go-id", "interactor",
@@ -99,13 +101,11 @@ wsQuery=function(query='', columns=NULL, format=NULL, limit=NULL,
     return(results)
 },
 
-geneSymbolToUniprotIds=function(genes, ignore.case=TRUE,
-                                ignore.nonalphanum=FALSE, partial.match=FALSE,
-                                filtering=TRUE, max.results=NA_integer_) {
+geneSymbolToUniprotIds=function(genes, ignore.nonalphanum=FALSE,
+                                partial.match=FALSE, filtering=TRUE,
+                                max.results=NA_integer_) {
     ":\n\nGets UniProt IDs associated with gene symbols.
     \ngenes: A vector of gene symbols to convert to UniProt IDs.
-    \nignore.case: If set to TRUE, ignore character case when comparing gene
-    symbols.
     \nignore.nonalphanum: If set to TRUE, do not take into account
     non-alphanumeric characters when comparing gene symbols. 
     \npartial.match: If set to TRUE, a match will be valid even if the provided
@@ -125,22 +125,36 @@ geneSymbolToUniprotIds=function(genes, ignore.case=TRUE,
         for (gene in genes)
             if ( ! is.na(gene)) {
                 
-                # Get UniProt IDs
+                # Set limit
                 limit <- NULL
                 if ( ! filtering && ! is.na(max.results))
                     limit <- max.results
-                x <- .self$wsQuery(gene, columns='genes', retfmt='ids',
-                                   limit=limit)
                 
-                # Filters
+                # Prepare query
+                wanted_genes <- gene
+                if (filtering && ignore.nonalphanum)
+                    wanted_genes <- c(wanted_genes, gsub('[^A-Za-z0-9]', '',
+                                                         gene))
+                if (filtering && partial.match)
+                    wanted_genes <- c(wanted_genes, paste0('*', wanted_genes),
+                                      paste0(wanted_genes, '*'))
+                query <- paste(paste0('gene:', wanted_genes), collapse=' OR ')
+                
+                # Run query
+                x <- .self$wsQuery(query, retfmt='ids', limit=limit)
+                
+                # Filtering
+                # Needed since UniProt web service may return entries with
+                # gene symbols like "TGF-b1a" when asking for "TGF-b1"
                 if (filtering) {
                     
                     # Prepare gene to find
                     gene.to.find <- gene
                     if (ignore.nonalphanum)
                         gene.to.find <- gsub('[^A-Za-z0-9]', '', gene.to.find)
-                    if (ignore.case)
-                        gene.to.find <- tolower(gene.to.find)
+
+                    # Ignore case
+                    gene.to.find <- tolower(gene.to.find)
                     
                     # Filtering function
                     gene_matches <- function(id) {
@@ -153,8 +167,8 @@ geneSymbolToUniprotIds=function(genes, ignore.case=TRUE,
                         if (ignore.nonalphanum)
                             gene.symbols <- gsub('[^A-Za-z0-9]', '',
                                                  gene.symbols)
-                        if (ignore.case)
-                            gene.symbols <- tolower(gene.symbols)
+                        # Ignore case
+                        gene.symbols <- tolower(gene.symbols)
                         
                         if (partial.match)
                             matches <- length(grep(gene.to.find, gene.symbols,

@@ -4,3 +4,5 @@ man
 tests/testthat/output
 biodbUniprot.Rcheck
 biodbUniprot_*.tar.gz
+doc
+Meta

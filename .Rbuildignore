@@ -6,3 +6,4 @@
 ^\.travis\.yml$
 ^biodbUniprot\.Rcheck$
 ^biodbUniprot_.*\.tar\.gz$
+^Meta$
