@@ -30,6 +30,15 @@ $(info "PKG_VERSION=$(PKG_VERSION)")
 
 RFLAGS=--slave --no-restore
 
+# Set testthat reporter
+ifndef TESTTHAT_REPORTER
+ifdef VIM
+TESTTHAT_REPORTER=summary
+else
+TESTTHAT_REPORTER=progress
+endif
+endif
+
 # Set test file filter
 ifndef TEST_FILE
 TEST_FILE=NULL
@@ -61,7 +70,7 @@ bioc.check: clean.vignettes $(ZIPPED_PKG)
 	R $(RFLAGS) -e 'BiocCheck::BiocCheck("$(ZIPPED_PKG)", `new-package`=TRUE, `quit-with-status`=TRUE, `no-check-formatting`=TRUE)'
 
 test:
-	R $(RFLAGS) -e "devtools::test('$(CURDIR)', filter=$(TEST_FILE), reporter=c('summary', 'fail'))" | sed 's!\([^/A-Za-z_-]\)\(test[^/A-Za-z][^/]\+\.R\)!\1tests/testthat/\2!'
+	R $(RFLAGS) -e "devtools::test('$(CURDIR)', filter=$(TEST_FILE), reporter=c('$(TESTTHAT_REPORTER)', 'fail'))" | sed 's!\([^/A-Za-z_-]\)\(test[^/A-Za-z][^/]\+\.R\)!\1tests/testthat/\2!'
 
 win:
 	R $(RFLAGS) -e "devtools::check_win_devel('$(CURDIR)')"
