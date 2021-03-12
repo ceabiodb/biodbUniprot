@@ -20,7 +20,7 @@ before_install:
     - R -e 'devtools::install_github("pkrog/biodb", ref="master", dependencies=TRUE, build_vignettes=FALSE)'
 
 script:
-    - travis_wait make check
+    - travis_wait 40 make check
 
 after_success:
     - Rscript -e 'covr::codecov()'
