@@ -1,6 +1,7 @@
 # biodbUniprot
 
 [![Build Status](https://travis-ci.org/pkrog/biodbUniprot.svg?branch=master)](https://travis-ci.org/pkrog/biodbUniprot)
+[![Codecov test coverage](https://codecov.io/gh/pkrog/biodbUniprot/branch/master/graph/badge.svg)](https://codecov.io/gh/pkrog/biodbUniprot?branch=master)
 
 An R package for accessing [Uniprot](https://www.uniprot.org/) online database, based on R package/framework [biodb](https://github.com/pkrog/biodb/).
 
