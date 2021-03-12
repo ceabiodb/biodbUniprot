@@ -1,0 +1,112 @@
+---
+title: "Searching for proteins"
+author: "Pierrick Roger"
+date: "`r doc_date()`"
+package: "`r pkg_ver('biodbUniprot')`"
+abstract: |
+  This vignette shows how to search for entries inside the UniProt database.
+vignette: |
+  %\VignetteIndexEntry{Searching for proteins.}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output:
+  BiocStyle::html_document:
+    toc: yes
+    toc_depth: 4
+    toc_float:
+      collapsed: false
+  BiocStyle::pdf_document: default
+bibliography: references.bib
+---
+
+# Purpose
+
+The *UniProt* Knowledge Base [@uniprotConsortium2016UniProtKB] can be searched
+using its *query* web service.
+
+We present here the way to contact this web service with this package.
+
+# Initialization
+
+First we need to initialize *biodb* and create a connector to *UniProt*:
+```{r, results='hide'}
+mybiodb <- biodb::Biodb()
+conn <- mybiodb$getFactory()$createConn('uniprot')
+```
+
+# Using the *query* web service
+
+The method `wsQuery()` implements the request to the *query* web service, and
+the parsing of its output.
+
+To get the raw results returned by the *UniProt* server, run the following code:
+```{r}
+conn$wsQuery('reviewed:yes AND organism:9606', columns=c('id', 'entry name'),
+             limit=2, retfmt='plain')
+```
+
+The first parameter is the query itself, as required by the web service.
+To learn how to write a query for *UniProt*, see a description of the *query* web
+service at <http://www.uniprot.org/help/api_queries>.
+
+The `columns` parameter is the fields you want back for each entry
+returned by the database.
+
+The `limit` parameter is the maximum number of entries the server must
+return.
+
+The `retfmt` parameter controls the type of output desired.
+Here `"plain"` states that we want the raw output from the server.
+
+To get the output parsed by *biodb* and get a data frame, run:
+```{r}
+conn$wsQuery('reviewed:yes AND organism:9606', columns=c('id', 'entry name'),
+             limit=2, retfmt='parsed')
+```
+
+To get only the list of *UniProt* identifiers, run:
+```{r}
+conn$wsQuery('reviewed:yes AND organism:9606', columns=c('id', 'entry name'),
+             limit=2, retfmt='ids')
+```
+
+And if you are curious to see the URL request that is sent to the server,
+run:
+```{r}
+conn$wsQuery('reviewed:yes AND organism:9606', columns=c('id', 'entry name'),
+             limit=2, retfmt='request')
+```
+
+# Conversion of gene symbols to *UniProt* IDs
+
+The method `geneSymbolToUniprotIds()` uses `wsQuery()` to search for *UniProt*
+entries that reference particular gene symbols.
+
+For instance, if you want to get the UniProt entries that have the gene symbol
+**G-CSF**, just run:
+```{r}
+ids <- conn$geneSymbolToUniprotIds('G-CSF')
+mybiodb$entryIdsToDataframe(ids[['G-CSF']], 'uniprot', fields=c('accession', 'gene.symbol'))
+```
+
+If you want to match also **GCSF** (no minus sign character), then run:
+```{r}
+ids <- conn$geneSymbolToUniprotIds('G-CSF', ignore.nonalphanum=TRUE)
+mybiodb$entryIdsToDataframe(ids[['G-CSF']], 'uniprot', fields=c('accession', 'gene.symbol'))
+```
+
+If you want to match **G-CSFa2** too, run:
+```{r}
+ids <- conn$geneSymbolToUniprotIds('G-CSF', partial.match=TRUE)
+mybiodb$entryIdsToDataframe(ids[['G-CSF']], 'uniprot', fields=c('accession', 'gene.symbol'))
+```
+
+# Closing biodb instance
+
+When done with your *biodb* instance you have to terminate it, in order to
+ensure release of resources (file handles, database connection, etc):
+```{r}
+mybiodb$terminate()
+```
+
+# References
