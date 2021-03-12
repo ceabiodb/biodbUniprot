@@ -20,7 +20,8 @@ before_install:
     - R -e 'devtools::install_github("pkrog/biodb", ref="master", dependencies=TRUE, build_vignettes=FALSE)'
 
 script:
-    - travis_wait 40 make check
+    - make test # Run this to download everything inside cache first. Other wise we get a "No output has been received in the last 10m0s" error while running testthat tests in check.
+    - make check
 
 after_success:
     - Rscript -e 'covr::codecov()'
