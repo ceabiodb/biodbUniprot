@@ -224,7 +224,7 @@ searchCompound=function(name=NULL, mass=NULL, mass.field=NULL, mass.tol=0.01,
         mass.field <- .self$getBiodb()$getEntryFields()$getRealName(mass.field)
 
         if (mass.field != 'molecular.mass')
-            .self$caution('Mass field "', mass.field, '" is not handled.')
+            .self$warning('Mass field "', mass.field, '" is not handled.')
 
         else {
 
@@ -240,7 +240,7 @@ searchCompound=function(name=NULL, mass=NULL, mass.field=NULL, mass.tol=0.01,
             uniprot.mass.min <- as.integer(mass.min)
             uniprot.mass.max <- as.integer(mass.max)
             if (uniprot.mass.min != mass.min || uniprot.mass.max != mass.max)
-                .self$caution('Uniprot requires integers for mass range.',
+                .self$warning('Uniprot requires integers for mass range.',
                               ' Range [', mass.min, ', ', mass.max,
                               '] will be converted into [', uniprot.mass.min,
                               ', ', uniprot.mass.max, '].')
