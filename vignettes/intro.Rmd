@@ -1,12 +1,10 @@
 ---
-title: "Searching for proteins"
+title: "An introduction to biodbUniprot"
 author: "Pierrick Roger"
-date: "`r doc_date()`"
-package: "`r pkg_ver('biodbUniprot')`"
-abstract: |
-  This vignette shows how to search for entries inside the UniProt database.
+date: "`r BiocStyle::doc_date()`"
+package: "`r BiocStyle::pkg_ver('biodbUniprot')`"
 vignette: |
-  %\VignetteIndexEntry{Searching for proteins.}
+  %\VignetteIndexEntry{Introduction to the biodbUniprot package.}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 output:
@@ -21,6 +19,9 @@ bibliography: references.bib
 
 # Purpose
 
+biodbUniprot is a *biodb* extension package that implements a connector to
+Uniprot database.
+
 The *UniProt* Knowledge Base [@uniprotConsortium2016UniProtKB] can be searched
 using its *query* web service.
 
@@ -28,9 +29,25 @@ We present here the way to contact this web service with this package.
 
 # Initialization
 
-First we need to initialize *biodb* and create a connector to *UniProt*:
+The first step in using *biodbUniprot*, is to create an instance of the biodb
+class `Biodb` from the main *biodb* package. This is done by calling the
+constructor of the class:
 ```{r, results='hide'}
 mybiodb <- biodb::Biodb()
+```
+During this step the configuration is set up, the cache system is initialized
+and extension packages are loaded.
+
+We will see at the end of this vignette that the *biodb* instance needs to be
+terminated with a call to the `terminate()` method.
+
+# Creating a connector to Uniprot database
+
+In *biodb* the connection to a database is handled by a connector instance that
+you can get from the factory.
+biodbUniprot implements a connector to a remote database.
+Here is the code to instantiate a connector:
+```{r}
 conn <- mybiodb$getFactory()$createConn('uniprot')
 ```
 

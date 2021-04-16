@@ -203,58 +203,41 @@ getEntryPageUrl=function(id) {
     return(vapply(id, f, FUN.VALUE=''))
 },
 
-searchCompound=function(name=NULL, mass=NULL, mass.field=NULL, mass.tol=0.01,
-                        mass.tol.unit='plain', max.results=NA_integer_) {
-    # Overrides super class' method.
-
-    .self$.checkMassField(mass=mass, mass.field=mass.field)
+.doSearchForEntries=function(fields=NULL, max.results=0) {
 
     query <- ''
 
-    # Search for name
-    if ( ! is.null(name) && ! is.na(name)) {
-        name.query <- paste('name', paste0('"', name, '"'), sep=':')
-        mnemonic.query <- paste('mnemonic', paste0('"', name, '"'), sep=':')
+    # Search by name
+    if ('name' %in% names(fields)) {
+        name.query <- paste('name', paste0('"', fields$name, '"'), sep=':')
+        mnemonic.query <- paste('mnemonic', paste0('"', fields$name, '"'),
+                                sep=':')
         query <- paste(name.query, mnemonic.query, sep=' OR ')
     }
 
-    # Search for mass
-    if ( ! is.null(mass) && ! is.null(mass.field)) {
+    # Search by mass
+    if ('molecular.mass' %in% names(fields)) {
 
-        mass.field <- .self$getBiodb()$getEntryFields()$getRealName(mass.field)
+        rng <- do.call(Range$new, fields[['molecular.mass']])
 
-        if (mass.field != 'molecular.mass')
-            .self$warning('Mass field "', mass.field, '" is not handled.')
+        # Uniprot does not accept mass in floating numbers
+        uniprot.mass.min <- as.integer(rng$getMin())
+        uniprot.mass.max <- as.integer(rng$getMax())
+#        if (uniprot.mass.min != mass.min || uniprot.mass.max != mass.max)
+#            .self$warning('Uniprot requires integers for mass range.',
+#                          ' Range [', mass.min, ', ', mass.max,
+#                          '] will be converted into [', uniprot.mass.min,
+#                          ', ', uniprot.mass.max, '].')
 
-        else {
+        mass.query <- paste0('mass:[', uniprot.mass.min, ' TO ',
+                             uniprot.mass.max, ']')
 
-            if (mass.tol.unit == 'ppm') {
-                mass.min <- mass * (1 - mass.tol * 1e-6)
-                mass.max <- mass * (1 + mass.tol * 1e-6)
-            } else {
-                mass.min <- mass - mass.tol
-                mass.max <- mass + mass.tol
-            }
-
-            # Uniprot does not accept mass in floating numbers
-            uniprot.mass.min <- as.integer(mass.min)
-            uniprot.mass.max <- as.integer(mass.max)
-            if (uniprot.mass.min != mass.min || uniprot.mass.max != mass.max)
-                .self$warning('Uniprot requires integers for mass range.',
-                              ' Range [', mass.min, ', ', mass.max,
-                              '] will be converted into [', uniprot.mass.min,
-                              ', ', uniprot.mass.max, '].')
-
-            mass.query <- paste0('mass:[', uniprot.mass.min, ' TO ',
-                                 uniprot.mass.max, ']')
-
-            if (nchar(query) > 0) {
-                query <- paste0('(', query, ')')
-                query <- paste(query, mass.query, sep=' AND ')
-            }
-            else
-                query <- mass.query
+        if (nchar(query) > 0) {
+            query <- paste0('(', query, ')')
+            query <- paste(query, mass.query, sep=' AND ')
         }
+        else
+            query <- mass.query
     }
 
     # Send query

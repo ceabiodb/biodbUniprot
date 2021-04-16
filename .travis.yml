@@ -1,3 +1,5 @@
+# Travis-CI configuration file for biodb extensions packages, version 1.0.0
+
 language: r
 cache: packages
 r: release
@@ -13,15 +15,12 @@ notifications:
 branches:
   only:
     - master
-
+    
 before_install:
     - R -e 'install.packages("BiocManager");BiocManager::install("BiocCheck")'
-    - R -e 'install.packages("devtools", dependencies=TRUE)'
-    - R -e 'devtools::install_github("pkrog/biodb", ref="master", dependencies=TRUE, build_vignettes=FALSE)'
 
 script:
-    - make test # Run this to download everything inside cache first. Other wise we get a "No output has been received in the last 10m0s" error while running testthat tests in check.
     - make check
 
-after_success:
-    - travis_wait Rscript -e 'covr::codecov()'
+#after_success:
+#    - Rscript -e 'covr::codecov()'
