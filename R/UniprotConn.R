@@ -224,7 +224,7 @@ getEntryPageUrl=function(id) {
         uniprot.mass.min <- as.integer(rng$getMin())
         uniprot.mass.max <- as.integer(rng$getMax())
 #        if (uniprot.mass.min != mass.min || uniprot.mass.max != mass.max)
-#            .self$warning('Uniprot requires integers for mass range.',
+#            biodb::warn0('Uniprot requires integers for mass range.',
 #                          ' Range [', mass.min, ', ', mass.max,
 #                          '] will be converted into [', uniprot.mass.min,
 #                          ', ', uniprot.mass.max, '].')

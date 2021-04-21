@@ -92,18 +92,15 @@ test.geneSymbolsToUniprotIds <- function(conn) {
         testthat::expect_true(all(expected_ids[[gene]] %in% ids[[gene]]))
 }
 
-# Main
-################################################################
+# Set context
+biodb::testContext("Test Uniprot connector.")
 
 # Instantiate Biodb
-biodb <- biodb::createBiodbTestInstance(log='uniprot_test.log', ack=TRUE)
+biodb <- biodb::createBiodbTestInstance(ack=TRUE)
 
 # Load package definitions
 file <- system.file("definitions.yml", package='biodbUniprot')
 biodb$loadDefinitions(file)
-
-# Set context
-biodb::setTestContext(biodb, "Test Uniprot connector.")
 
 # Create connector
 conn <- biodb$getFactory()$createConn('uniprot')
