@@ -73,7 +73,7 @@ wsQuery=function(query='', columns=NULL, format=NULL, limit=NULL,
     params <- list(query=query, columns=columns, format=format)
     if ( ! is.null(limit) && ! is.na(limit))
         params[['limit']] <- limit
-    url <- BiodbUrl(url=c(.self$getPropValSlot('urls', 'base.url'), ''),
+    url <- BiodbUrl$new(url=c(.self$getPropValSlot('urls', 'base.url'), ''),
                     params=params)
     request <- .self$makeRequest(method='get', url=url)
 
@@ -199,7 +199,7 @@ getEntryPageUrl=function(id) {
     # Overrides super class' method.
 
     u <- c(.self$getPropValSlot('urls', 'base.url'), id)
-    f <- function(x) BiodbUrl(url=u)$toString()
+    f <- function(x) BiodbUrl$new(url=u)$toString()
     return(vapply(id, f, FUN.VALUE=''))
 },
 
