@@ -7,7 +7,7 @@
 #'
 #' @examples
 #' # Create an instance with default settings:
-#' mybiodb <- biodb::Biodb()
+#' mybiodb <- biodb::newInst()
 #'
 #' # Get Uniprot connector
 #' uniprot <- mybiodb$getFactory()$createConn('uniprot')
