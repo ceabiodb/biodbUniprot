@@ -30,10 +30,10 @@ We present here the way to contact this web service with this package.
 # Initialization
 
 The first step in using *biodbUniprot*, is to create an instance of the biodb
-class `Biodb` from the main *biodb* package. This is done by calling the
+class `BiodbMain` from the main *biodb* package. This is done by calling the
 constructor of the class:
 ```{r, results='hide'}
-mybiodb <- biodb::Biodb()
+mybiodb <- biodb::newInst()
 ```
 During this step the configuration is set up, the cache system is initialized
 and extension packages are loaded.
