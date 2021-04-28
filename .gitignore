@@ -9,6 +9,7 @@ biodbUniprot_*.tar.gz
 biodbUniprot_*.tgz
 biodbUniprot.Rcheck
 cache
+check.Renviron
 doc
 man
 Meta
