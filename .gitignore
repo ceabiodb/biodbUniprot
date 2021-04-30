@@ -9,12 +9,15 @@ biodbUniprot_*.tar.gz
 biodbUniprot_*.tgz
 biodbUniprot.Rcheck
 cache
+cache*
+check.Renviron
 doc
 man
 Meta
 src-i386
 src-x64
 src/*.rds
+tests/*/output
 tests/testthat/output
 vignettes/*.html
 vignettes/*.md
