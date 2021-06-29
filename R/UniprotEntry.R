@@ -15,31 +15,31 @@
 #' # Terminate instance.
 #' mybiodb$terminate()
 #'
-#' @export UniprotEntry
-#' @exportClass UniprotEntry
-UniprotEntry <- methods::setRefClass("UniprotEntry",
-    contains="BiodbXmlEntry",
+#' @export
+UniprotEntry <- R6::R6Class("UniprotEntry",
+inherit=BiodbXmlEntry,
 
-methods=list(
+public=list(
+),
 
-.isContentCorrect=function(content) {
+private=list(
+isContentCorrect=function(content) {
     return( ! grepl("^<!DOCTYPE html ", content, perl=TRUE))
 },
 
-.parseFieldsStep2=function(parsed.content) {
+parseFieldsStep2=function(parsed.content) {
 
     # Remove new lines from sequence string
-    if (.self$hasField('aa.seq'))
-        .self$setFieldValue('aa.seq',
-                            gsub("\\n", "", .self$getFieldValue('aa.seq')))
+    if (self$hasField('aa.seq'))
+        self$setFieldValue('aa.seq',
+                            gsub("\\n", "", self$getFieldValue('aa.seq')))
 
     # Get synonyms
-    ns <- .self$getParent()$getPropertyValue('xml.ns')
+    ns <- self$getParent()$getPropertyValue('xml.ns')
     synonyms <- XML::xpathSApply(parsed.content,
                                  "//uniprot:protein//uniprot:fullName",
                                  XML::xmlValue, namespaces=ns)
     if (length(synonyms) > 0)
-        .self$appendFieldValue('name', synonyms)
+        self$appendFieldValue('name', synonyms)
 }
-
 ))

@@ -20,30 +20,30 @@
 #' # Terminate instance.
 #' mybiodb$terminate()
 #'
-#' @import methods
-#' @export UniprotConn
-#' @exportClass UniprotConn
-UniprotConn <- methods::setRefClass("UniprotConn",
-    contains=c("BiodbRemotedbConn", "BiodbCompounddbConn"),
+#' @import R6
+#' @export
+UniprotConn <- R6::R6Class("UniprotConn",
+inherit=biodb::BiodbConn,
 
-methods=list(
+public=list(
 
+#' @description
+#' Calls query to the database for searching for compounds.
+#' See http //www.uniprot.org/help/api_queries for details.
+#' @param query The query to send to the database.
+#' @param columns The field columns to retrieve from the database (e.g.: 'id',
+#' 'entry name', 'pathway', 'organism', 'sequence', etc).
+#' @param format The return format (e.g.: 'tab').
+#' @param limit The maximum number of entries to return.
+#' @param retfmt Use to set the format of the returned value. 'plain' will
+#' return the raw results from the server, as a character value. 'parsed' will
+#' return the parsed results, as a JSON object. 'request' will return a
+#' BiodbRequest object representing the request as it would have been sent.
+#' 'ids' will return a character vector containing the IDs of the matching
+#' entries.
+#' @return Depending on `retfmt` parameter.
 wsQuery=function(query='', columns=NULL, format=NULL, limit=NULL,
-                 retfmt=c('plain', 'parsed', 'ids', 'request')) {
-    ":\n\nCalls query to the database for searching for compounds.
-    See http://www.uniprot.org/help/api_queries for details.
-    \nquery: The query to send to the database.
-    \ncolumns: The field columns to retrieve from the database (e.g.: 'id',
-    'entry name', 'pathway', 'organism', 'sequence', etc).
-    \nformat: The return format (e.g.: 'tab').
-    \nlimit: The maximum number of entries to return.
-    \nretfmt: Use to set the format of the returned value. 'plain' will return
-    the raw results from the server, as a character value. 'parsed' will return
-    the parsed results, as a JSON object. 'request' will return a BiodbRequest
-    object representing the request as it would have been sent. 'ids' will
-    return a character vector containing the IDs of the matching entries.
-    \nReturned value: Depending on `retfmt` parameter.
-    "
+    retfmt=c('plain', 'parsed', 'ids', 'request')) {
 
     retfmt <- match.arg(retfmt)
 
@@ -73,16 +73,16 @@ wsQuery=function(query='', columns=NULL, format=NULL, limit=NULL,
     params <- list(query=query, columns=columns, format=format)
     if ( ! is.null(limit) && ! is.na(limit))
         params[['limit']] <- limit
-    url <- BiodbUrl$new(url=c(.self$getPropValSlot('urls', 'base.url'), ''),
+    url <- BiodbUrl$new(url=c(self$getPropValSlot('urls', 'base.url'), ''),
                     params=params)
-    request <- .self$makeRequest(method='get', url=url)
+    request <- self$makeRequest(method='get', url=url)
 
     # Return request
     if (retfmt == 'request')
         return(request)
 
     # Send request
-    results <- .self$getBiodb()$getRequestScheduler()$sendRequest(request)
+    results <- self$getBiodb()$getRequestScheduler()$sendRequest(request)
 
     # Parse
     if (retfmt != 'plain') {
@@ -101,22 +101,21 @@ wsQuery=function(query='', columns=NULL, format=NULL, limit=NULL,
     return(results)
 },
 
+#' @description
+#' Gets UniProt IDs associated with gene symbols.
+#' @param genes A vector of gene symbols to convert to UniProt IDs.
+#' @param ignore.nonalphanum If set to TRUE, do not take into account
+#' non-alphanumeric characters when comparing gene symbols. 
+#' @param partial.match If set to TRUE, a match will be valid even if the provided
+#' gene symbol is only a substring of the found gene symbol.
+#' @param filtering If set to FALSE, do not run any filtering and return all the
+#' UniProt IDs given by UniProt Query web service.
+#' @param max.results Maximum of UniProt IDs returned for each gene symbol.
+#' @return A named list of vectors of UniProt IDs. The names are gene
+#' symbols provided with the genes parameter. For each gene symbol, a vector
+#' of found UniProt IDs is set.
 geneSymbolToUniprotIds=function(genes, ignore.nonalphanum=FALSE,
-                                partial.match=FALSE, filtering=TRUE,
-                                max.results=NA_integer_) {
-    ":\n\nGets UniProt IDs associated with gene symbols.
-    \ngenes: A vector of gene symbols to convert to UniProt IDs.
-    \nignore.nonalphanum: If set to TRUE, do not take into account
-    non-alphanumeric characters when comparing gene symbols. 
-    \npartial.match: If set to TRUE, a match will be valid even if the provided
-    gene symbol is only a substring of the found gene symbol.
-    \nfiltering: If set to FALSE, do not run any filtering and return all the
-    UniProt IDs given by UniProt Query web service.
-    \nmax.results: Maximum of UniProt IDs returned for each gene symbol.
-    \nReturned value: A named list of vectors of UniProt IDs. The names are gene
-    symbols provided with the genes parameter. For each gene symbol, a vector
-    of found UniProt IDs is set.
-    "
+    partial.match=FALSE, filtering=TRUE, max.results=NA_integer_) {
     
     ids <- list()
     
@@ -141,7 +140,7 @@ geneSymbolToUniprotIds=function(genes, ignore.nonalphanum=FALSE,
                 query <- paste(paste0('gene:', wanted_genes), collapse=' OR ')
                 
                 # Run query
-                x <- .self$wsQuery(query, retfmt='ids', limit=limit)
+                x <- self$wsQuery(query, retfmt='ids', limit=limit)
                 
                 # Filtering
                 # Needed since UniProt web service may return entries with
@@ -162,7 +161,7 @@ geneSymbolToUniprotIds=function(genes, ignore.nonalphanum=FALSE,
                         matches <- FALSE
                         
                         # Get gene symbols and prepare them
-                        entry <- .self$getEntry(id)
+                        entry <- self$getEntry(id)
                         gene.symbols <- entry$getFieldValue('gene.symbol')
                         if (ignore.nonalphanum)
                             gene.symbols <- gsub('[^A-Za-z0-9]', '',
@@ -198,12 +197,14 @@ geneSymbolToUniprotIds=function(genes, ignore.nonalphanum=FALSE,
 getEntryPageUrl=function(id) {
     # Overrides super class' method.
 
-    u <- c(.self$getPropValSlot('urls', 'base.url'), id)
+    u <- c(self$getPropValSlot('urls', 'base.url'), id)
     f <- function(x) BiodbUrl$new(url=u)$toString()
     return(vapply(id, f, FUN.VALUE=''))
-},
+}
+),
 
-.doSearchForEntries=function(fields=NULL, max.results=0) {
+private=list(
+doSearchForEntries=function(fields=NULL, max.results=0) {
 
     query <- ''
 
@@ -241,23 +242,22 @@ getEntryPageUrl=function(id) {
     }
 
     # Send query
-    ids <- .self$wsQuery(query=query, limit=max.results, retfmt='ids')
+    ids <- self$wsQuery(query=query, limit=max.results, retfmt='ids')
 
     return(ids)
 },
 
-.doGetEntryContentRequest=function(id, concatenate=TRUE) {
+doGetEntryContentRequest=function(id, concatenate=TRUE) {
 
-    url <- paste0(.self$getPropValSlot('urls', 'base.url'), id, '.xml')
+    url <- paste0(self$getPropValSlot('urls', 'base.url'), id, '.xml')
 
     return(url)
 },
 
-.doGetEntryIds=function(max.results=NA_integer_) {
+doGetEntryIds=function(max.results=NA_integer_) {
 
-    ids <- .self$wsQuery(limit=max.results, retfmt='ids')
+    ids <- self$wsQuery(limit=max.results, retfmt='ids')
 
     return(ids)
 }
-
 ))

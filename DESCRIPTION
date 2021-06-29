@@ -20,7 +20,7 @@ Suggests:
 	lgr,
 	covr
 Imports:
-	methods,
+	R6,
 	biodb (>= 1.0.4)
 RoxygenNote: 7.1.1
 Collate:

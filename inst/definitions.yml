@@ -1,6 +1,8 @@
 databases:
 
   uniprot:
+    remote: true
+    compound.db: true
     entry.content.type: xml
     name: UniProt
     parsing.expr:

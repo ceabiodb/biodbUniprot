@@ -2,7 +2,5 @@
 
 export(UniprotConn)
 export(UniprotEntry)
-exportClasses(UniprotConn)
-exportClasses(UniprotEntry)
 import(biodb)
 import(methods)
