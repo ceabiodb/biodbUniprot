@@ -2,5 +2,5 @@
 
 export(UniprotConn)
 export(UniprotEntry)
+import(R6)
 import(biodb)
-import(methods)
