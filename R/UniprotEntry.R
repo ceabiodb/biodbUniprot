@@ -23,11 +23,11 @@ public=list(
 ),
 
 private=list(
-isContentCorrect=function(content) {
+doCheckContent=function(content) {
     return( ! grepl("^<!DOCTYPE html ", content, perl=TRUE))
 },
 
-parseFieldsStep2=function(parsed.content) {
+doParseFieldsStep2=function(parsed.content) {
 
     # Remove new lines from sequence string
     if (self$hasField('aa.seq'))
@@ -37,8 +37,7 @@ parseFieldsStep2=function(parsed.content) {
     # Get synonyms
     ns <- self$getParent()$getPropertyValue('xml.ns')
     synonyms <- XML::xpathSApply(parsed.content,
-                                 "//uniprot:protein//uniprot:fullName",
-                                 XML::xmlValue, namespaces=ns)
+        "//uniprot:protein//uniprot:fullName", XML::xmlValue, namespaces=ns)
     if (length(synonyms) > 0)
         self$appendFieldValue('name', synonyms)
 }

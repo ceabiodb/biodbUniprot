@@ -45,36 +45,28 @@ public=list(
 wsQuery=function(query='', columns=NULL, format=NULL, limit=NULL,
     retfmt=c('plain', 'parsed', 'ids', 'request')) {
 
+    # Check parameters
     retfmt <- match.arg(retfmt)
-
-    # Set parameters for retrieving IDs
     if (retfmt == 'ids') {
         columns <- 'id'
         format <- 'tab'
     }
-
-    # Set columns
-    if (retfmt == 'ids')
-        columns <- 'id'
-    else if (is.null(columns) || all(is.na(columns)))
-        columns <- c("citation", "clusters", "comments", "domains", "domain",
-                     "ec", "id", "entry name", "existence", "families",
-                     "features", "genes", "go", "go-id", "interactor",
-                     "keywords", "last-modified", "length", "organism",
-                     "organism-id", "pathway", "protein names", "reviewed",
-                     "sequence", "3d", "version", "virus hosts")
-    columns <- paste(columns, collapse=',')
-
-    # Set format
     if (is.null(format) || is.na(format))
         format <- 'tab'
+    if (retfmt != 'ids' && (is.null(columns) || all(is.na(columns))))
+        columns <- c("citation", "clusters", "comments", "domains", "domain",
+            "ec", "id", "entry name", "existence", "families", "features",
+            "genes", "go", "go-id", "interactor", "keywords", "last-modified",
+            "length", "organism", "organism-id", "pathway", "protein names",
+            "reviewed", "sequence", "3d", "version", "virus hosts")
+    columns <- paste(columns, collapse=',')
 
     # Build request
     params <- list(query=query, columns=columns, format=format)
     if ( ! is.null(limit) && ! is.na(limit))
         params[['limit']] <- limit
     url <- BiodbUrl$new(url=c(self$getPropValSlot('urls', 'base.url'), ''),
-                    params=params)
+        params=params)
     request <- self$makeRequest(method='get', url=url)
 
     # Return request
@@ -106,10 +98,10 @@ wsQuery=function(query='', columns=NULL, format=NULL, limit=NULL,
 #' @param genes A vector of gene symbols to convert to UniProt IDs.
 #' @param ignore.nonalphanum If set to TRUE, do not take into account
 #' non-alphanumeric characters when comparing gene symbols. 
-#' @param partial.match If set to TRUE, a match will be valid even if the provided
-#' gene symbol is only a substring of the found gene symbol.
-#' @param filtering If set to FALSE, do not run any filtering and return all the
-#' UniProt IDs given by UniProt Query web service.
+#' @param partial.match If set to TRUE, a match will be valid even if the
+#' provided gene symbol is only a substring of the found gene symbol.
+#' @param filtering If set to FALSE, do not run any filtering and return all
+#' the UniProt IDs given by UniProt Query web service.
 #' @param max.results Maximum of UniProt IDs returned for each gene symbol.
 #' @return A named list of vectors of UniProt IDs. The names are gene
 #' symbols provided with the genes parameter. For each gene symbol, a vector
@@ -133,10 +125,10 @@ geneSymbolToUniprotIds=function(genes, ignore.nonalphanum=FALSE,
                 wanted_genes <- gene
                 if (filtering && ignore.nonalphanum)
                     wanted_genes <- c(wanted_genes, gsub('[^A-Za-z0-9]', '',
-                                                         gene))
+                        gene))
                 if (filtering && partial.match)
                     wanted_genes <- c(wanted_genes, paste0('*', wanted_genes),
-                                      paste0(wanted_genes, '*'))
+                        paste0(wanted_genes, '*'))
                 query <- paste(paste0('gene:', wanted_genes), collapse=' OR ')
                 
                 # Run query
@@ -145,46 +137,14 @@ geneSymbolToUniprotIds=function(genes, ignore.nonalphanum=FALSE,
                 # Filtering
                 # Needed since UniProt web service may return entries with
                 # gene symbols like "TGF-b1a" when asking for "TGF-b1"
-                if (filtering) {
-                    
-                    # Prepare gene to find
-                    gene.to.find <- gene
-                    if (ignore.nonalphanum)
-                        gene.to.find <- gsub('[^A-Za-z0-9]', '', gene.to.find)
-
-                    # Ignore case
-                    gene.to.find <- tolower(gene.to.find)
-                    
-                    # Filtering function
-                    gene_matches <- function(id) {
-                        
-                        matches <- FALSE
-                        
-                        # Get gene symbols and prepare them
-                        entry <- self$getEntry(id)
-                        gene.symbols <- entry$getFieldValue('gene.symbol')
-                        if (ignore.nonalphanum)
-                            gene.symbols <- gsub('[^A-Za-z0-9]', '',
-                                                 gene.symbols)
-                        # Ignore case
-                        gene.symbols <- tolower(gene.symbols)
-                        
-                        if (partial.match)
-                            matches <- length(grep(gene.to.find, gene.symbols,
-                                                   fixed=TRUE)) > 0
-                        else
-                            matches <- gene.to.find %in% gene.symbols
-                        
-                        return(matches)
-                    }
-                    
-                    # Run filtering
-                    x <- Filter(gene_matches, x)
-                }
+                if (filtering)
+                    x <- private$filterResults(x, gene=gene,
+                        ignore.nonalphanum=ignore.nonalphanum,
+                        partial.match=partial.match)
 
                 # Cut
                 if ( ! is.na(max.results) && length(x) > max.results)
-                    x <- x[1:max.results]
+                    x <- x[seq_len(max.results)]
 
                 # Set results
                 ids[[gene]] <- x
@@ -192,19 +152,19 @@ geneSymbolToUniprotIds=function(genes, ignore.nonalphanum=FALSE,
     }
 
     return(ids)
-},
+}
+),
 
-getEntryPageUrl=function(id) {
-    # Overrides super class' method.
+private=list(
+
+doGetEntryPageUrl=function(id) {
 
     u <- c(self$getPropValSlot('urls', 'base.url'), id)
     f <- function(x) BiodbUrl$new(url=u)$toString()
     return(vapply(id, f, FUN.VALUE=''))
 }
-),
 
-private=list(
-doSearchForEntries=function(fields=NULL, max.results=0) {
+,doSearchForEntries=function(fields=NULL, max.results=0) {
 
     query <- ''
 
@@ -231,7 +191,7 @@ doSearchForEntries=function(fields=NULL, max.results=0) {
 #                          ', ', uniprot.mass.max, '].')
 
         mass.query <- paste0('mass:[', uniprot.mass.min, ' TO ',
-                             uniprot.mass.max, ']')
+            uniprot.mass.max, ']')
 
         if (nchar(query) > 0) {
             query <- paste0('(', query, ')')
@@ -245,19 +205,54 @@ doSearchForEntries=function(fields=NULL, max.results=0) {
     ids <- self$wsQuery(query=query, limit=max.results, retfmt='ids')
 
     return(ids)
-},
+}
 
-doGetEntryContentRequest=function(id, concatenate=TRUE) {
+,doGetEntryContentRequest=function(id, concatenate=TRUE) {
 
     url <- paste0(self$getPropValSlot('urls', 'base.url'), id, '.xml')
 
     return(url)
-},
+}
 
-doGetEntryIds=function(max.results=NA_integer_) {
+,doGetEntryIds=function(max.results=NA_integer_) {
 
     ids <- self$wsQuery(limit=max.results, retfmt='ids')
 
     return(ids)
+}
+
+,filterResults=function(x, gene, ignore.nonalphanum, partial.match) {
+
+    # Prepare gene to find
+    gene.to.find <- gene
+    if (ignore.nonalphanum)
+        gene.to.find <- gsub('[^A-Za-z0-9]', '', gene.to.find)
+
+    # Ignore case
+    gene.to.find <- tolower(gene.to.find)
+    
+    # Filtering function
+    gene_matches <- function(id) {
+        
+        matches <- FALSE
+        
+        # Get gene symbols and prepare them
+        entry <- self$getEntry(id)
+        gene.symbols <- entry$getFieldValue('gene.symbol')
+        if (ignore.nonalphanum)
+            gene.symbols <- gsub('[^A-Za-z0-9]', '', gene.symbols)
+        # Ignore case
+        gene.symbols <- tolower(gene.symbols)
+        
+        if (partial.match)
+            matches <- length(grep(gene.to.find, gene.symbols, fixed=TRUE)) > 0
+        else
+            matches <- gene.to.find %in% gene.symbols
+        
+        return(matches)
+    }
+    
+    # Run filtering
+    x <- Filter(gene_matches, x)
 }
 ))
