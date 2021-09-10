@@ -75,6 +75,7 @@ wsQuery=function(query='', columns=NULL, format=NULL, limit=NULL,
 
     # Send request
     results <- self$getBiodb()$getRequestScheduler()$sendRequest(request)
+    results <- unlist(results)
 
     # Parse
     if (retfmt != 'plain') {
@@ -238,16 +239,20 @@ doGetEntryPageUrl=function(id) {
         
         # Get gene symbols and prepare them
         entry <- self$getEntry(id)
-        gene.symbols <- entry$getFieldValue('gene.symbol')
-        if (ignore.nonalphanum)
-            gene.symbols <- gsub('[^A-Za-z0-9]', '', gene.symbols)
-        # Ignore case
-        gene.symbols <- tolower(gene.symbols)
-        
-        if (partial.match)
-            matches <- length(grep(gene.to.find, gene.symbols, fixed=TRUE)) > 0
-        else
-            matches <- gene.to.find %in% gene.symbols
+
+        if ( ! is.null(entry)) {
+
+            gene.symbols <- entry$getFieldValue('gene.symbol')
+            if (ignore.nonalphanum)
+                gene.symbols <- gsub('[^A-Za-z0-9]', '', gene.symbols)
+            # Ignore case
+            gene.symbols <- tolower(gene.symbols)
+            
+            if (partial.match)
+                matches <- length(grep(gene.to.find, gene.symbols, fixed=TRUE)) > 0
+            else
+                matches <- gene.to.find %in% gene.symbols
+        }
         
         return(matches)
     }
