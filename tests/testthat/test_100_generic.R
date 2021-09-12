@@ -12,7 +12,9 @@ biodb$loadDefinitions(defFile)
 conn <- biodb$getFactory()$createConn('uniprot')
 
 # Run generic tests
-biodb::runGenericTests(conn, list(max.results=3))
+testRefFolder <- system.file("testref", package='biodbUniprot')
+biodb::runGenericTests(conn, pkgName='biodbUniprot',
+    testRefFolder=testRefFolder, opt=list(max.results=3))
 
 # Terminate Biodb
 biodb$terminate()
