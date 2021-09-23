@@ -1,0 +1,6 @@
+Changes in version 0.99.1 (2021-09-23)
++ Ignore build folder when building package.
++ Add documentation.
+
+Changes in version 0.99.0 (2021-09-16)
++ Submitted to Bioconductor

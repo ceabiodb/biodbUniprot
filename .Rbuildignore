@@ -1,6 +1,9 @@
 ^.*\.dockerfile$
 ^.*\.log$
 ^.*rds$
+^.*tests/dockerfiles$
+^.*tests/testthat/_snaps$
+^.*tests/testthat/output$
 ^.BBSoptions$
 ^\.travis\.yml$
 ^biodb_ext\.yml$
@@ -9,6 +12,7 @@
 ^biodb.*\.Rcheck$
 ^biodbUniprot_.*\.tar\.gz$
 ^biodbUniprot\.Rcheck$
+^build$
 ^cache.*$
 ^cache$
 ^check.Renviron$
