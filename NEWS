@@ -1,3 +1,6 @@
+Changes in version 0.99.2 (2021-10-03)
++ Use biodb 1.1.10.
+
 Changes in version 0.99.1 (2021-09-23)
 + Ignore build folder when building package.
 + Add documentation.
