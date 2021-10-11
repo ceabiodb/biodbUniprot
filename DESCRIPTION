@@ -2,25 +2,28 @@ Package: biodbUniprot
 Title: biodbUniprot, a library for connecting to the Uniprot Database
 Version: 0.99.3
 Authors@R: c(person("Pierrick", "Roger", email = "pierrick.roger@cea.fr", role = c("aut", "cre")))
-Description: The biodbUniprot library is an extension of the biodb framework package, that provides access to the UniProt database. It allows to retrieve entries by their accession number, and run web the service query.
+Description: The biodbUniprot library is an extension of the biodb framework
+    package. It provides access to the UniProt database. It allows to retrieve
+    entries by their accession number, and run web service queries for
+    searching for entries.
 biocViews: Software, Infrastructure, DataImport
 Depends:
-    R (>= 4.1.1)
+    R (>= 4.1.0)
 License: AGPL-3
 Encoding: UTF-8
 VignetteBuilder: knitr
 Suggests:
-	BiocStyle,
-	roxygen2,
-	devtools,
-	testthat (>= 2.0.0),
-	knitr,
-	rmarkdown,
-	lgr,
-	covr
+    BiocStyle,
+    roxygen2,
+    devtools,
+    testthat (>= 2.0.0),
+    knitr,
+    rmarkdown,
+    lgr,
+    covr
 Imports:
-	R6,
-	biodb (>= 1.1.10)
+    R6,
+    biodb (>= 1.1.10)
 RoxygenNote: 7.1.2
 Collate:
     'UniprotConn.R'

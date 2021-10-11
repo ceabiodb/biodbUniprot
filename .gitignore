@@ -5,6 +5,8 @@
 .Rhistory
 .swp
 *.log
+/doc/
+/Meta/
 biodbUniprot_*.tar.gz
 biodbUniprot_*.tgz
 biodbUniprot.Rcheck
@@ -24,5 +26,3 @@ testthat-problems.rds
 vignettes/*.html
 vignettes/*.md
 vignettes/*.R
-/doc/
-/Meta/
