@@ -197,7 +197,7 @@ Gets UniProt IDs associated with gene symbols.
   ignore.nonalphanum = FALSE,
   partial.match = FALSE,
   filtering = TRUE,
-  max.results = NA_integer_
+  max.results = 0
 )}\if{html}{\out{</div>}}
 }
 
