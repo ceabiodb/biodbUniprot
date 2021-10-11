@@ -118,6 +118,15 @@ ids <- conn$geneSymbolToUniprotIds('G-CSF', partial.match=TRUE)
 mybiodb$entryIdsToDataframe(ids[['G-CSF']], 'uniprot', fields=c('accession', 'gene.symbol'))
 ```
 
+The way this method works is by running `wsQuery()` to get a first set of entry
+identifiers, and then download each entry and apply a filtering on them.
+The downloading of the entries may quite long, `wsQuery()` returning
+potentially thousands of entries, each entry being downloaded with a single
+separate request and the frequency limit being 3 request per second.
+Entries already in cache or memory will not be downloaded again, so running the
+same request a second time will be faster, as it is usually the case with
+*biodb*.
+
 # Closing biodb instance
 
 When done with your *biodb* instance you have to terminate it, in order to

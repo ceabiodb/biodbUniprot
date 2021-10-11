@@ -108,7 +108,7 @@ wsQuery=function(query='', columns=NULL, format=NULL, limit=NULL,
 #' symbols provided with the genes parameter. For each gene symbol, a vector
 #' of found UniProt IDs is set.
 geneSymbolToUniprotIds=function(genes, ignore.nonalphanum=FALSE,
-    partial.match=FALSE, filtering=TRUE, max.results=NA_integer_) {
+    partial.match=FALSE, filtering=TRUE, max.results=0) {
     
     ids <- list()
     
@@ -119,7 +119,7 @@ geneSymbolToUniprotIds=function(genes, ignore.nonalphanum=FALSE,
                 
                 # Set limit
                 limit <- NULL
-                if ( ! filtering && ! is.na(max.results))
+                if ( ! filtering && max.results > 0)
                     limit <- max.results
                 
                 # Prepare query
@@ -141,10 +141,10 @@ geneSymbolToUniprotIds=function(genes, ignore.nonalphanum=FALSE,
                 if (filtering)
                     x <- private$filterResults(x, gene=gene,
                         ignore.nonalphanum=ignore.nonalphanum,
-                        partial.match=partial.match)
+                        partial.match=partial.match, limit=max.results)
 
                 # Cut
-                if ( ! is.na(max.results) && length(x) > max.results)
+                if ( max.results > 0 && length(x) > max.results)
                     x <- x[seq_len(max.results)]
 
                 # Set results
@@ -215,14 +215,14 @@ doGetEntryPageUrl=function(id) {
     return(url)
 }
 
-,doGetEntryIds=function(max.results=NA_integer_) {
+,doGetEntryIds=function(max.results=0) {
 
     ids <- self$wsQuery(limit=max.results, retfmt='ids')
 
     return(ids)
 }
 
-,filterResults=function(x, gene, ignore.nonalphanum, partial.match) {
+,filterResults=function(x, gene, ignore.nonalphanum, partial.match, limit=0) {
 
     # Prepare gene to find
     gene.to.find <- gene
@@ -231,7 +231,7 @@ doGetEntryPageUrl=function(id) {
 
     # Ignore case
     gene.to.find <- tolower(gene.to.find)
-    
+
     # Filtering function
     gene_matches <- function(id) {
         
@@ -249,7 +249,8 @@ doGetEntryPageUrl=function(id) {
             gene.symbols <- tolower(gene.symbols)
             
             if (partial.match)
-                matches <- length(grep(gene.to.find, gene.symbols, fixed=TRUE)) > 0
+                matches <- length(grep(gene.to.find, gene.symbols,
+                    fixed=TRUE)) > 0
             else
                 matches <- gene.to.find %in% gene.symbols
         }
@@ -257,7 +258,24 @@ doGetEntryPageUrl=function(id) {
         return(matches)
     }
     
+    # Create progress instance
+    prg <- Progress$new(biodb=self$getBiodb(), msg='Filtering results.',
+        total=length(x))
+    
     # Run filtering
-    x <- Filter(gene_matches, x)
+    y <- character()
+    for (id in x) {
+
+        if (gene_matches(id))
+            y <- c(y, id)
+
+        if (limit > 0 && length(y) == limit)
+            break
+
+        # Progress message
+        prg$increment()
+    }
+
+    return(y)
 }
 ))

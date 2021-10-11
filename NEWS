@@ -1,3 +1,6 @@
+Changes in version 0.99.3 (2021-10-11)
++ Show progress when filtering results in geneSymbolToUniprotIds().
+
 Changes in version 0.99.2 (2021-10-03)
 + Use biodb 1.1.10.
 
