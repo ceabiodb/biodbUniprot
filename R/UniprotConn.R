@@ -20,7 +20,7 @@
 #' # Terminate instance.
 #' mybiodb$terminate()
 #'
-#' @import R6
+#' @importFrom R6 R6Class
 #' @export
 UniprotConn <- R6::R6Class("UniprotConn",
 inherit=biodb::BiodbConn,

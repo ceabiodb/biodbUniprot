@@ -15,6 +15,7 @@
 #' # Terminate instance.
 #' mybiodb$terminate()
 #'
+#' @importFrom R6 R6Class
 #' @export
 UniprotEntry <- R6::R6Class("UniprotEntry",
 inherit=BiodbXmlEntry,
