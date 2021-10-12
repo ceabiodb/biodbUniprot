@@ -1,25 +1,50 @@
 # biodbUniprot
 
-[![Build Status](https://travis-ci.org/pkrog/biodbUniprot.svg?branch=master)](https://travis-ci.org/pkrog/biodbUniprot)
 [![Codecov test coverage](https://codecov.io/gh/pkrog/biodbUniprot/branch/master/graph/badge.svg)](https://codecov.io/gh/pkrog/biodbUniprot?branch=master)
 
-An R package for accessing [Uniprot](https://www.uniprot.org/) online database, based on R package/framework [biodb](https://github.com/pkrog/biodb/).
+An R package for accessing [Uniprot](https://www.uniprot.org/) online database,
+based on R package/framework [biodb](https://github.com/pkrog/biodb/).
 
 ## Introduction
 
-TODO
+*biodbUniprot* is an extension package of the *biodb* package.
+It allows to connect to UniProt for retrieving entries, searching for entries by
+name or organism, and convert gene symbols to UniProt IDs.
 
 ## Examples
 
-TODO
+
+Getting entries:
+```r
+bdb <- biodb::Biodb()
+uniprot <- bdb$getFactory()$createConn('uniprot')
+entries <- uniprot$getEntry(c('P01011', 'P09237'))
+bdb$entriesToDataframe(entries)
+```
+
+Run a web service query:
+```r
+bdb <- biodb::Biodb()
+uniprot <- bdb$getFactory()$createConn('uniprot')
+uniprot$wsQuery('reviewed:yes AND organism:9606', columns=c('id', 'entry name'),
+    limit=2, retfmt='parsed')
+```
 
 ## Installation
 
-TODO
+Install the latest stable version using Bioconductor:
+```r
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install('biodbUniprot')
+```
 
 ## Documentation
 
-TODO
+See the introduction vignette:
+```r
+vignette('biodbUniprot', package='biodbUniprot')
+```
 
 ## Citations
 
