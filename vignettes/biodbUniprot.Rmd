@@ -17,7 +17,7 @@ output:
 bibliography: references.bib
 ---
 
-# Purpose
+# Introduction
 
 biodbUniprot is a *biodb* extension package that implements a connector to
 Uniprot database.
@@ -26,6 +26,15 @@ The *UniProt* Knowledge Base [@uniprotConsortium2016UniProtKB] can be searched
 using its *query* web service.
 
 We present here the way to contact this web service with this package.
+
+# Installation
+
+Install using Bioconductor:
+```{r, eval=FALSE}
+if (!requireNamespace("BiocManager", quietly=TRUE))
+    install.packages("BiocManager")
+BiocManager::install('biodbUniprot')
+```
 
 # Initialization
 
@@ -51,6 +60,20 @@ Here is the code to instantiate a connector:
 conn <- mybiodb$getFactory()$createConn('uniprot')
 ```
 
+# Getting entries
+
+To download entries, run the `getEntry()`, which returns a list of `BiodbEntry`
+objects:
+```{r}
+entries <- conn$getEntry(c('P01011', 'P09237'))
+```
+
+To print the information contained in the entry objects as a data frame, run
+the `entriesToDataframe()` method attached to the `BiodbMain` instance:
+```{r}
+mybiodb$entriesToDataframe(entries)
+```
+
 # Using the *query* web service
 
 The method `wsQuery()` implements the request to the *query* web service, and
@@ -59,7 +82,7 @@ the parsing of its output.
 To get the raw results returned by the *UniProt* server, run the following code:
 ```{r}
 conn$wsQuery('reviewed:yes AND organism:9606', columns=c('id', 'entry name'),
-             limit=2, retfmt='plain')
+	limit=2, retfmt='plain')
 ```
 
 The first parameter is the query itself, as required by the web service.
@@ -78,20 +101,20 @@ Here `"plain"` states that we want the raw output from the server.
 To get the output parsed by *biodb* and get a data frame, run:
 ```{r}
 conn$wsQuery('reviewed:yes AND organism:9606', columns=c('id', 'entry name'),
-             limit=2, retfmt='parsed')
+    limit=2, retfmt='parsed')
 ```
 
 To get only the list of *UniProt* identifiers, run:
 ```{r}
 conn$wsQuery('reviewed:yes AND organism:9606', columns=c('id', 'entry name'),
-             limit=2, retfmt='ids')
+    limit=2, retfmt='ids')
 ```
 
 And if you are curious to see the URL request that is sent to the server,
 run:
 ```{r}
 conn$wsQuery('reviewed:yes AND organism:9606', columns=c('id', 'entry name'),
-             limit=2, retfmt='request')
+    limit=2, retfmt='request')
 ```
 
 # Conversion of gene symbols to *UniProt* IDs
@@ -133,6 +156,12 @@ When done with your *biodb* instance you have to terminate it, in order to
 ensure release of resources (file handles, database connection, etc):
 ```{r}
 mybiodb$terminate()
+```
+
+# Session information
+
+```{r}
+sessionInfo()
 ```
 
 # References
