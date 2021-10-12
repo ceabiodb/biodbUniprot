@@ -1,3 +1,9 @@
+Changes in version 0.99.4 (2021-10-12)
++ Add session info and install section in vignette.
++ Rename vignette.
++ Use importFrom.
++ Add ORCID, URL and BugReports.
+
 Changes in version 0.99.3 (2021-10-11)
 + Show progress when filtering results in geneSymbolToUniprotIds().
 
