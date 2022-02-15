@@ -14,6 +14,6 @@ remote: yes
 downloadable: no
 makefile: yes
 rcpp: no
-vignetteName: intro
+vignetteName: biodbUniprot
 githubRepos: pkrog/biodbUniprot
 travis: no
