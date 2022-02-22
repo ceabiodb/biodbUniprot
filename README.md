@@ -16,7 +16,7 @@ name or organism, and convert gene symbols to UniProt IDs.
 
 Getting entries:
 ```r
-bdb <- biodb::Biodb()
+bdb <- boidb::newInst()
 uniprot <- bdb$getFactory()$createConn('uniprot')
 entries <- uniprot$getEntry(c('P01011', 'P09237'))
 bdb$entriesToDataframe(entries)
@@ -24,7 +24,7 @@ bdb$entriesToDataframe(entries)
 
 Run a web service query:
 ```r
-bdb <- biodb::Biodb()
+bdb <- boidb::newInst()
 uniprot <- bdb$getFactory()$createConn('uniprot')
 uniprot$wsQuery('reviewed:yes AND organism:9606', columns=c('id', 'entry name'),
     limit=2, retfmt='parsed')
