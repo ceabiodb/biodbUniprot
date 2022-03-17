@@ -1,3 +1,7 @@
+Changes in version 1.1.1 (2022-03-17)
++ Update maintenance files.
++ Correct instantiation in example.
+
 Changes in version 0.99.4 (2021-10-12)
 + Add session info and install section in vignette.
 + Rename vignette.
