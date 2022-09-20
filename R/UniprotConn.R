@@ -14,8 +14,8 @@
 #'
 #' # Access web service query
 #' result <- uniprot$wsQuery(query='name:"prion protein"',
-#'                            columns=c('id', 'entry name'),
-#'                            format='txt', limit=10)
+#'                            fields=c('id', 'entry name'),
+#'                            format='tsv', size=10)
 #'
 #' # Terminate instance.
 #' mybiodb$terminate()
@@ -31,10 +31,12 @@ public=list(
 #' Calls query to the database for searching for compounds.
 #' See http //www.uniprot.org/help/api_queries for details.
 #' @param query The query to send to the database.
-#' @param columns The field columns to retrieve from the database (e.g.: 'id',
+#' @param fields The field columns to retrieve from the database (e.g.: 'id',
 #' 'entry name', 'pathway', 'organism', 'sequence', etc).
-#' @param format The return format (e.g.: 'tab').
-#' @param limit The maximum number of entries to return.
+#' @param columns DEPRECATED. Same as fields.
+#' @param format The return format (e.g.: 'tsv').
+#' @param size  The maximum number of entries to return.
+#' @param limit DEPRECATED. Same as size.
 #' @param retfmt Use to set the format of the returned value. 'plain' will
 #' return the raw results from the server, as a character value. 'parsed' will
 #' return the parsed results, as a JSON object. 'request' will return a
@@ -43,30 +45,35 @@ public=list(
 #' entries.
 #' @return Depending on `retfmt` parameter.
 wsQuery=function(query='', columns=NULL, format=NULL, limit=NULL,
-    retfmt=c('plain', 'parsed', 'ids', 'request')) {
+    retfmt=c('plain', 'parsed', 'ids', 'request'), size=NULL, fields=NULL) {
 
+    if (is.null(size))
+        size <- limit
+    if (is.null(fields))
+        fields <- columns
+    
     # Check parameters
     retfmt <- match.arg(retfmt)
     if (retfmt == 'ids') {
-        columns <- 'id'
-        format <- 'tab'
+        fields <- 'id'
+        format <- 'tsv'
     }
     if (is.null(format) || is.na(format))
         format <- 'tab'
-    if (retfmt != 'ids' && (is.null(columns) || all(is.na(columns))))
-        columns <- c("citation", "clusters", "comments", "domains", "domain",
+    if (retfmt != 'ids' && (is.null(fields) || all(is.na(fields))))
+        fields <- c("citation", "clusters", "comments", "domains", "domain",
             "ec", "id", "entry name", "existence", "families", "features",
             "genes", "go", "go-id", "interactor", "keywords", "last-modified",
             "length", "organism", "organism-id", "pathway", "protein names",
             "reviewed", "sequence", "3d", "version", "virus hosts")
-    columns <- paste(columns, collapse=',')
+    fields <- paste(fields, collapse=',')
 
     # Build request
-    params <- list(query=query, columns=columns, format=format)
-    if ( ! is.null(limit) && ! is.na(limit))
-        params[['limit']] <- limit
-    url <- BiodbUrl$new(url=c(self$getPropValSlot('urls', 'base.url'), ''),
-        params=params)
+    params <- list(query=query, fields=fields, format=format)
+    if ( ! is.null(size) && ! is.na(size))
+        params[['size']] <- size
+    url <- BiodbUrl$new(url=c(self$getPropValSlot('urls', 'rest.url'),
+        'search'), params=params)
     request <- self$makeRequest(method='get', url=url)
 
     # Return request
@@ -133,7 +140,7 @@ geneSymbolToUniprotIds=function(genes, ignore.nonalphanum=FALSE,
                 query <- paste(paste0('gene:', wanted_genes), collapse=' OR ')
                 
                 # Run query
-                x <- self$wsQuery(query, retfmt='ids', limit=limit)
+                x <- self$wsQuery(query, retfmt='ids', size=limit)
                 
                 # Filtering
                 # Needed since UniProt web service may return entries with
@@ -203,7 +210,7 @@ doGetEntryPageUrl=function(id) {
     }
 
     # Send query
-    ids <- self$wsQuery(query=query, limit=max.results, retfmt='ids')
+    ids <- self$wsQuery(query=query, size=max.results, retfmt='ids')
 
     return(ids)
 }
@@ -217,7 +224,7 @@ doGetEntryPageUrl=function(id) {
 
 ,doGetEntryIds=function(max.results=0) {
 
-    ids <- self$wsQuery(limit=max.results, retfmt='ids')
+    ids <- self$wsQuery(size=max.results, retfmt='ids')
 
     return(ids)
 }

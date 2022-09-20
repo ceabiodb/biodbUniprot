@@ -33,6 +33,7 @@ databases:
         - molecular.mass
     urls:
       base.url: https://www.uniprot.org/uniprot/
+      rest.url: https://rest.uniprot.org/uniprotkb/
     xml.ns:
       uniprot: http://uniprot.org/uniprot
 
