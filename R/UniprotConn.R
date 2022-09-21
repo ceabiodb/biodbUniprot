@@ -12,10 +12,10 @@
 #' # Get Uniprot connector
 #' uniprot <- mybiodb$getFactory()$createConn('uniprot')
 #'
-#' # Access web service query
-#' result <- uniprot$wsQuery(query='name:"prion protein"',
-#'                            columns=c('id', 'entry name'),
-#'                            format='txt', limit=10)
+#' # Access web service "search":
+#' result <- uniprot$wsSearch(query='protein_name:"prion protein"',
+#'                            fields=c('id', 'entry name'),
+#'                            format='tsv', size=10)
 #'
 #' # Terminate instance.
 #' mybiodb$terminate()
@@ -28,13 +28,13 @@ inherit=biodb::BiodbConn,
 public=list(
 
 #' @description
-#' Calls query to the database for searching for compounds.
-#' See http //www.uniprot.org/help/api_queries for details.
+#' Calls search service on the database for searching for compounds.
+#' See https://www.uniprot.org/help/programmatic_access for details.
 #' @param query The query to send to the database.
-#' @param columns The field columns to retrieve from the database (e.g.: 'id',
+#' @param fields The field columns to retrieve from the database (e.g.: 'id',
 #' 'entry name', 'pathway', 'organism', 'sequence', etc).
-#' @param format The return format (e.g.: 'tab').
-#' @param limit The maximum number of entries to return.
+#' @param format The return format (e.g.: 'tsv').
+#' @param size  The maximum number of entries to return.
 #' @param retfmt Use to set the format of the returned value. 'plain' will
 #' return the raw results from the server, as a character value. 'parsed' will
 #' return the parsed results, as a JSON object. 'request' will return a
@@ -42,31 +42,31 @@ public=list(
 #' 'ids' will return a character vector containing the IDs of the matching
 #' entries.
 #' @return Depending on `retfmt` parameter.
-wsQuery=function(query='', columns=NULL, format=NULL, limit=NULL,
+wsSearch=function(query='', fields=NULL, format=NULL, size=NULL,
     retfmt=c('plain', 'parsed', 'ids', 'request')) {
 
     # Check parameters
     retfmt <- match.arg(retfmt)
     if (retfmt == 'ids') {
-        columns <- 'id'
-        format <- 'tab'
+        fields <- 'accession'
+        format <- 'tsv'
     }
-    if (is.null(format) || is.na(format))
-        format <- 'tab'
-    if (retfmt != 'ids' && (is.null(columns) || all(is.na(columns))))
-        columns <- c("citation", "clusters", "comments", "domains", "domain",
-            "ec", "id", "entry name", "existence", "families", "features",
-            "genes", "go", "go-id", "interactor", "keywords", "last-modified",
-            "length", "organism", "organism-id", "pathway", "protein names",
-            "reviewed", "sequence", "3d", "version", "virus hosts")
-    columns <- paste(columns, collapse=',')
+    if (is.null(format) || is.na(format) || format == 'tab')
+        format <- 'tsv'
+    if (retfmt != 'ids' && (is.null(fields) || all(is.na(fields))))
+        fields <- c("citation", "clusters", "comments", "domains", "domain",
+            "ec", "accession", "id", "existence", "families", "features",
+            "gene_names", "go", "go-id", "interactor", "keywords", "last-modified",
+            "length", "organism_name", "organism_id", "pathway", "protein_name",
+            "reviewed", "sequence", "3d", "version", "virus_hosts")
+    fields <- paste(fields, collapse=',')
 
     # Build request
-    params <- list(query=query, columns=columns, format=format)
-    if ( ! is.null(limit) && ! is.na(limit))
-        params[['limit']] <- limit
-    url <- BiodbUrl$new(url=c(self$getPropValSlot('urls', 'base.url'), ''),
-        params=params)
+    params <- list(query=query, fields=fields, format=format)
+    if ( ! is.null(size) && ! is.na(size))
+        params[['size']] <- size
+    url <- BiodbUrl$new(url=c(self$getPropValSlot('urls', 'rest.url'),
+        'search'), params=params)
     request <- self$makeRequest(method='get', url=url)
 
     # Return request
@@ -95,6 +95,27 @@ wsQuery=function(query='', columns=NULL, format=NULL, limit=NULL,
 },
 
 #' @description
+#' Calls query service on the database for searching for compounds.
+#' See http //www.uniprot.org/help/api_queries for details.
+#' @param query The query to send to the database.
+#' @param columns The field columns to retrieve from the database (e.g.: 'id',
+#' 'entry name', 'pathway', 'organism', 'sequence', etc).
+#' @param format The return format (e.g.: 'tsv').
+#' @param limit The maximum number of entries to return.
+#' @param retfmt Use to set the format of the returned value. 'plain' will
+#' return the raw results from the server, as a character value. 'parsed' will
+#' return the parsed results, as a JSON object. 'request' will return a
+#' BiodbRequest object representing the request as it would have been sent.
+#' 'ids' will return a character vector containing the IDs of the matching
+#' entries.
+#' @return Depending on `retfmt` parameter.
+wsQuery=function(query='', columns=NULL, format=NULL, limit=NULL,
+    retfmt=c('plain', 'parsed', 'ids', 'request')) {
+    return(self$wsSearch(query=query, fields=columns, format=format, size=limit,
+        retfmt=retfmt))
+},
+
+#' @description
 #' Gets UniProt IDs associated with gene symbols.
 #' @param genes A vector of gene symbols to convert to UniProt IDs.
 #' @param ignore.nonalphanum If set to TRUE, do not take into account
@@ -102,7 +123,8 @@ wsQuery=function(query='', columns=NULL, format=NULL, limit=NULL,
 #' @param partial.match If set to TRUE, a match will be valid even if the
 #' provided gene symbol is only a substring of the found gene symbol.
 #' @param filtering If set to FALSE, do not run any filtering and return all
-#' the UniProt IDs given by UniProt Query web service.
+#' the UniProt IDs given by UniProt search web service. DEPRECATED: new UniProt
+#' REST API returns only exact match.
 #' @param max.results Maximum of UniProt IDs returned for each gene symbol.
 #' @return A named list of vectors of UniProt IDs. The names are gene
 #' symbols provided with the genes parameter. For each gene symbol, a vector
@@ -133,15 +155,15 @@ geneSymbolToUniprotIds=function(genes, ignore.nonalphanum=FALSE,
                 query <- paste(paste0('gene:', wanted_genes), collapse=' OR ')
                 
                 # Run query
-                x <- self$wsQuery(query, retfmt='ids', limit=limit)
+                x <- self$wsSearch(query, retfmt='ids', size=limit)
                 
                 # Filtering
                 # Needed since UniProt web service may return entries with
                 # gene symbols like "TGF-b1a" when asking for "TGF-b1"
-                if (filtering)
-                    x <- private$filterResults(x, gene=gene,
-                        ignore.nonalphanum=ignore.nonalphanum,
-                        partial.match=partial.match, limit=max.results)
+#                if (filtering)
+#                    x <- private$filterResults(x, gene=gene,
+#                        ignore.nonalphanum=ignore.nonalphanum,
+#                        partial.match=partial.match, limit=max.results)
 
                 # Cut
                 if ( max.results > 0 && length(x) > max.results)
@@ -171,10 +193,10 @@ doGetEntryPageUrl=function(id) {
 
     # Search by name
     if ('name' %in% names(fields)) {
-        name.query <- paste('name', paste0('"', fields$name, '"'), sep=':')
-        mnemonic.query <- paste('mnemonic', paste0('"', fields$name, '"'),
+        id.query <- paste('id', paste0('"', fields$name, '"'), sep=':')
+        protein_name.query <- paste('protein_name', paste0('"', fields$name, '"'),
                                 sep=':')
-        query <- paste(name.query, mnemonic.query, sep=' OR ')
+        query <- paste(id.query, protein_name.query, sep=' OR ')
     }
 
     # Search by mass
@@ -203,21 +225,21 @@ doGetEntryPageUrl=function(id) {
     }
 
     # Send query
-    ids <- self$wsQuery(query=query, limit=max.results, retfmt='ids')
+    ids <- self$wsSearch(query=query, size=max.results, retfmt='ids')
 
     return(ids)
 }
 
 ,doGetEntryContentRequest=function(id, concatenate=TRUE) {
 
-    url <- paste0(self$getPropValSlot('urls', 'base.url'), id, '.xml')
+    url <- paste0(self$getPropValSlot('urls', 'rest.url'), id, '.xml')
 
     return(url)
 }
 
 ,doGetEntryIds=function(max.results=0) {
 
-    ids <- self$wsQuery(limit=max.results, retfmt='ids')
+    ids <- self$wsSearch(size=max.results, retfmt='ids')
 
     return(ids)
 }

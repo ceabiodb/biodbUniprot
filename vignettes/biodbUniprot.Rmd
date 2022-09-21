@@ -23,7 +23,7 @@ biodbUniprot is a *biodb* extension package that implements a connector to
 Uniprot database.
 
 The *UniProt* Knowledge Base [@uniprotConsortium2016UniProtKB] can be searched
-using its *query* web service.
+using its *search* web service.
 
 We present here the way to contact this web service with this package.
 
@@ -74,25 +74,25 @@ the `entriesToDataframe()` method attached to the `BiodbMain` instance:
 mybiodb$entriesToDataframe(entries)
 ```
 
-# Using the *query* web service
+# Using the *search* web service
 
-The method `wsQuery()` implements the request to the *query* web service, and
-the parsing of its output.
+The method `wsSearch()` (`wsQuery()` is now deprecated) implements the request
+to the *search* web service, and the parsing of its output.
 
 To get the raw results returned by the *UniProt* server, run the following code:
 ```{r}
-conn$wsQuery('reviewed:yes AND organism:9606', columns=c('id', 'entry name'),
-	limit=2, retfmt='plain')
+conn$wsSearch('reviewed:true AND organism_id:9606', fields=c('accession', 'id'),
+    size=2, retfmt='plain')
 ```
 
-The first parameter is the query itself, as required by the web service.
-To learn how to write a query for *UniProt*, see a description of the *query* web
-service at <http://www.uniprot.org/help/api_queries>.
+The first parameter is the query, as required by the web service.
+To learn how to write a query for *UniProt*, see a description of the *query*
+web service at <http://www.uniprot.org/help/api_queries>.
 
-The `columns` parameter is the fields you want back for each entry
+The `fields` parameter is the fields you want back for each entry
 returned by the database.
 
-The `limit` parameter is the maximum number of entries the server must
+The `size` parameter is the maximum number of entries the server must
 return.
 
 The `retfmt` parameter controls the type of output desired.
@@ -100,50 +100,53 @@ Here `"plain"` states that we want the raw output from the server.
 
 To get the output parsed by *biodb* and get a data frame, run:
 ```{r}
-conn$wsQuery('reviewed:yes AND organism:9606', columns=c('id', 'entry name'),
-    limit=2, retfmt='parsed')
+conn$wsSearch('reviewed:true AND organism_id:9606', fields=c('accession', 'id'),
+    size=2, retfmt='parsed')
 ```
 
 To get only the list of *UniProt* identifiers, run:
 ```{r}
-conn$wsQuery('reviewed:yes AND organism:9606', columns=c('id', 'entry name'),
-    limit=2, retfmt='ids')
+conn$wsSearch('reviewed:true AND organism_id:9606', fields=c('accession', 'id'),
+    size=2, retfmt='ids')
 ```
 
 And if you are curious to see the URL request that is sent to the server,
 run:
 ```{r}
-conn$wsQuery('reviewed:yes AND organism:9606', columns=c('id', 'entry name'),
-    limit=2, retfmt='request')
+conn$wsSearch('reviewed:true AND organism_id:9606', fields=c('accession', 'id'),
+    size=2, retfmt='request')
 ```
 
 # Conversion of gene symbols to *UniProt* IDs
 
-The method `geneSymbolToUniprotIds()` uses `wsQuery()` to search for *UniProt*
+The method `geneSymbolToUniprotIds()` uses `wsSearch()` to search for *UniProt*
 entries that reference particular gene symbols.
 
 For instance, if you want to get the UniProt entries that have the gene symbol
 **G-CSF**, just run:
 ```{r}
 ids <- conn$geneSymbolToUniprotIds('G-CSF')
-mybiodb$entryIdsToDataframe(ids[['G-CSF']], 'uniprot', fields=c('accession', 'gene.symbol'))
+mybiodb$entryIdsToDataframe(ids[['G-CSF']], 'uniprot', fields=c('accession',
+    'gene.symbol'))
 ```
 
 If you want to match also **GCSF** (no minus sign character), then run:
 ```{r}
 ids <- conn$geneSymbolToUniprotIds('G-CSF', ignore.nonalphanum=TRUE)
-mybiodb$entryIdsToDataframe(ids[['G-CSF']], 'uniprot', fields=c('accession', 'gene.symbol'))
+mybiodb$entryIdsToDataframe(ids[['G-CSF']], 'uniprot', fields=c('accession',
+    'gene.symbol'))
 ```
 
 If you want to match **G-CSFa2** too, run:
 ```{r}
 ids <- conn$geneSymbolToUniprotIds('G-CSF', partial.match=TRUE)
-mybiodb$entryIdsToDataframe(ids[['G-CSF']], 'uniprot', fields=c('accession', 'gene.symbol'))
+mybiodb$entryIdsToDataframe(ids[['G-CSF']], 'uniprot', fields=c('accession',
+    'gene.symbol'))
 ```
 
-The way this method works is by running `wsQuery()` to get a first set of entry
+The way this method works is by running `wsSearch()` to get a first set of entry
 identifiers, and then download each entry and apply a filtering on them.
-The downloading of the entries may quite long, `wsQuery()` returning
+The downloading of the entries may quite long, `wsSearch()` returning
 potentially thousands of entries, each entry being downloaded with a single
 separate request and the frequency limit being 3 request per second.
 Entries already in cache or memory will not be downloaded again, so running the
